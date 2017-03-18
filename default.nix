@@ -4,15 +4,23 @@ let
 
   inherit (nixpkgs) pkgs;
 
-  f = { mkDerivation, base, stdenv }:
+  f = { mkDerivation, aeson, base, base-compat, stdenv
+      , string-conversions, text, turtle, unordered-containers
+      }:
       mkDerivation {
         pname = "nix-info";
         version = "0.1.0.0";
         src = ./.;
         isLibrary = true;
         isExecutable = true;
-        libraryHaskellDepends = [ base ];
-        executableHaskellDepends = [ base ];
+        libraryHaskellDepends = [
+          aeson base base-compat string-conversions text turtle
+          unordered-containers
+        ];
+        executableHaskellDepends = [
+          aeson base base-compat string-conversions text turtle
+          unordered-containers
+        ];
         homepage = "https://github.com/nix-hackers/nix-info";
         description = "brew info clone for Nix";
         license = stdenv.lib.licenses.bsd3;

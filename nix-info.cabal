@@ -1,0 +1,47 @@
+-- This file has been generated from package.yaml by hpack version 0.15.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           nix-info
+version:        0.1.0.0
+synopsis:       brew info clone for Nix
+description:    See README at <https://github.com/nix-hackers/nix-info#readme>
+category:       Development
+stability:      experimental
+homepage:       https://github.com/nix-hackers/nix-info
+bug-reports:    https://github.com/nix-hackers/nix-info/issues
+author:         Eric Bailey
+maintainer:     eric@ericb.me
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
+
+extra-source-files:
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/nix-hackers/nix-info
+
+library
+  hs-source-dirs:
+      src
+  ghc-options: -Wall
+  build-depends:
+      base >=4.9 && <4.10
+  exposed-modules:
+      NixInfo
+  other-modules:
+      Paths_nix_info
+  default-language: Haskell2010
+
+executable nix-info
+  main-is: Main.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall
+  build-depends:
+      base >=4.9 && <4.10
+    , nix-info
+  default-language: Haskell2010

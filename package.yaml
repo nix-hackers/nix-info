@@ -1,0 +1,30 @@
+name: nix-info
+version: '0.1.0.0'
+synopsis: brew info clone for Nix
+description: See README at <https://github.com/nix-hackers/nix-info#readme>
+category: Development
+stability: experimental
+homepage: https://github.com/nix-hackers/nix-info
+github: nix-hackers/nix-info
+author: Eric Bailey
+maintainer: eric@ericb.me
+license: BSD3
+extra-source-files:
+- ChangeLog.md
+
+ghc-options: -Wall
+
+dependencies:
+- base >=4.9 && <4.10
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - NixInfo
+
+executables:
+  nix-info:
+    main: Main.hs
+    source-dirs: app
+    dependencies:
+    - nix-info

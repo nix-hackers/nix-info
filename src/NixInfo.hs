@@ -1,3 +1,4 @@
+#line 244 "nix-info.nw"
 -- -------------------------------------------------------------- [ NixInfo.hs ]
 -- |
 -- Module      : NixInfo
@@ -20,9 +21,11 @@ import           Prelude.Compat hiding (putStrLn)
 import           Data.Foldable  (traverse_)
 import           Data.Maybe     (catMaybes)
 
+#line 239 "nix-info.nw"
 import qualified Data.Text      as T
 import           Data.Text.IO   (putStrLn)
 
+#line 274 "nix-info.nw"
 -- printPackage :: MonadIO io => Package -> io ()
 printPackage :: Package -> IO ()
 printPackage (Package pkgPath (PackageInfo pkgName _pkgSystem pkgMeta)) =
@@ -40,4 +43,5 @@ printPackage (Package pkgPath (PackageInfo pkgName _pkgSystem pkgMeta)) =
   , position pkgMeta
   ]
 
+#line 270 "nix-info.nw"
 -- --------------------------------------------------------------------- [ EOF ]

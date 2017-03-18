@@ -1,0 +1,426 @@
+% -*- mode: noweb; ess-noweb-default-code-mode: haskell-mode; -*-
+\documentclass[nobib]{tufte-handout}
+
+\usepackage[T1]{fontenc}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage[american]{babel}
+
+\usepackage[style=alphabetic,backend=biber]{biblatex}
+
+\usepackage{csquotes}
+
+\addbibresource{nix-info.bib}
+
+\usepackage{noweb}
+
+\usepackage{color}
+% https://commons.wikimedia.org/wiki/File:Erlang_logo.svg
+\definecolor{ErlangRed}{HTML}{A90533}
+
+\usepackage{hyperref}
+\hypersetup{
+  bookmarks=true,
+  pdffitwindow=true,
+  pdfstartview={FitH},
+  pdftitle={nix-info}
+  pdfauthor={Eric Bailey <eric@ericb.me>},
+  pdfsubject={brew info clone for Nix},
+  pdfkeywords={nix, nixpkgs, metadata, command-line-tool, haskell, literate programming, noweb},
+  colorlinks=true,
+  linkcolor=ErlangRed,
+  urlcolor=ErlangRed
+}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\usepackage[outputdir=tex]{minted}
+
+% NOTE: Use Tufte instead of noweb page style.
+% \pagestyle{noweb}
+% NOTE: Use shift option for wide code.
+% \noweboptions{smallcode,shortxref,webnumbering,english}
+ \noweboptions{shift,smallcode,shortxref,webnumbering,english,noidentxref}
+
+\title{
+  nix-info
+  \thanks{a \tt{brew info} clone for \href{https://nixos.org/nix/}{Nix}.}
+}
+
+\author{Eric Bailey}
+
+\date{March 18, 2017}
+
+% \newcommand{\stylehook}{\marginpar{\raggedright\sl style hook}}
+
+\usepackage{todonotes}
+% \newcommand{\todo}[2][1]{\marginnote[#1\baselineskip]{\bf \color{red}
+%     $\leftarrow$ TODO: #2}}
+
+\newmintinline[hsk]{haskell}{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+  \todo[inline]{write abstract}
+\end{abstract}
+
+% \tableofcontents
+% \newpage
+
+
+\newthought{The reason to use Haskell} for \tt{nix-info} is so we can have
+strong, static typing.
+
+\todo{flesh this out}
+
+\section{Language Extensions}
+
+Since we're going to be juggling \hsk{Text}, (lazy) \hsk{ByteString}, and
+\hsk{Line}, we use the \hsk{OverloadedStrings}
+extension \parencite{Charles2014}.
+
+\todo{add links to data types}
+
+<<OverloadedStrings>>=
+{-# LANGUAGE OverloadedStrings #-}
+@
+
+For generic \hsk{Aeson} [[<<magic>>]], we use [[TemplateHaskell]]. \\
+
+\todo{cite magic}
+
+\todo{flesh this out}
+
+\marginnote[2\baselineskip]{Do you believe in [[<<magic>>]]?}
+<<TemplateHaskell>>=
+{-# LANGUAGE TemplateHaskell   #-}
+@
+
+\section{Data Types}
+
+<<NixInfo.Types Imports>>=
+import           Data.Aeson
+import           Data.Aeson.TH     (`defaultOptions, `deriveJSON)
+
+import qualified Data.HashMap.Lazy as `HM
+import           Data.Text         (`Text)
+@
+
+\newthought{Data Types}
+
+<<Data Types>>=
+-- -------------------------------------------------------------- [ Data Types ]
+
+<<Meta>>
+
+<<PackageInfo>>
+
+<<Package>>
+
+<<PackageList>>
+@
+
+asd
+
+
+\newthought{The standard meta-attributes} are documented in the Nixpkgs
+Contributors Guide \parencite{nixpkgs-manual}.
+
+\todo{flesh this out}
+
+\todo{use better types than just \hsk{Text} everywhere \ldots}
+
+<<Meta>>=
+data `Meta = Meta
+  { description      :: Maybe Text
+  , longDescription  :: Maybe Text
+  , branch           :: Maybe Text
+  , homepage         :: Maybe Text
+  , downloadPage     :: Maybe Text
+  , maintainers      :: Maybe [Text]
+  , priority         :: Maybe Int
+  , platforms        :: Maybe [Text]
+  , hydraPlatforms   :: Maybe [Text]
+  , broken           :: Maybe Bool
+  , updateWalker     :: Maybe Bool
+  , outputsToInstall :: Maybe [Text]
+  , position         :: Maybe Text
+  }
+  deriving (Show)
+@
+
+
+\todo{describe this}
+
+<<PackageInfo>>=
+data `PackageInfo = PackageInfo
+  { name   :: Text
+  , system :: Text
+  , meta   :: Meta
+  }
+  deriving (Show)
+@
+
+\todo{describe this}
+
+<<Package>>=
+data `Package = Package
+  { path :: Text
+  , info :: PackageInfo
+  }
+  deriving (Show)
+@
+
+This \hsk{newtype} is a cheap trick to avoid using \hsk{FlexibleInstances} for
+our [[<<FromJSON Instances>>]].
+
+\todo{describe why}
+
+<<PackageList>>=
+newtype `PackageList = PackageList [Package]
+@
+
+\todo{describe this}
+
+<<magic>>=
+$(deriveJSON defaultOptions ''Meta)
+
+$(deriveJSON defaultOptions ''PackageInfo)
+@
+
+\todo{describe this}
+
+<<FromJSON Instances>>=
+-- ------------------------------------------------------ [ FromJSON Instances ]
+
+<<magic>>
+
+instance FromJSON PackageList where
+  parseJSON (Object v) =
+    PackageList <$> traverse (\(p,y) -> Package p <$> parseJSON y) (HM.toList v)
+  parseJSON _          = fail "non-object"
+@
+
+<<src/NixInfo/Types.hs>>=
+-- ---------------------------------------------------------------- [ Types.hs ]
+-- |
+-- Module      : NixInfo.Types
+-- Copyright   : (c) 2017, Eric Bailey
+-- License     : BSD-style (see LICENSE)
+--
+-- Maintainer  : eric@ericb.me
+-- Stability   : experimental
+-- Portability : portable
+--
+-- Data types and JSON parsers for nix-info
+------------------------------------------------------------------------ [ EOH ]
+<<OverloadedStrings>>
+<<TemplateHaskell>>
+
+module NixInfo.Types where
+
+<<NixInfo.Types Imports>>
+
+<<Data Types>>
+
+<<FromJSON Instances>>
+
+-- --------------------------------------------------------------------- [ EOF ]
+@ %def NixInfo.Types
+@ %def FromJSON
+
+\section{Helper Functions}
+
+<<Text IO Imports>>=
+import qualified Data.Text      as `T
+import           Data.Text.IO   (`putStrLn)
+@
+
+<<src/NixInfo.hs>>=
+-- -------------------------------------------------------------- [ NixInfo.hs ]
+-- |
+-- Module      : NixInfo
+-- Copyright   : (c) 2017, Eric Bailey
+-- License     : BSD-style (see LICENSE)
+--
+-- Maintainer  : eric@ericb.me
+-- Stability   : experimental
+-- Portability : portable
+--
+-- brew info clone for Nix
+------------------------------------------------------------------------ [ EOH ]
+module NixInfo (printPackage) where
+
+import           NixInfo.Types
+
+import           Prelude        ()
+import           Prelude.Compat hiding (putStrLn)
+
+import           Data.Foldable  (traverse_)
+import           Data.Maybe     (catMaybes)
+
+<<Text IO Imports>>
+
+<<printPackage :: Package -> IO ()>>
+
+-- --------------------------------------------------------------------- [ EOF ]
+@
+
+<<printPackage :: Package -> IO ()>>=
+-- printPackage :: MonadIO io => Package -> io ()
+printPackage :: Package -> IO ()
+printPackage (Package pkgPath (PackageInfo pkgName _pkgSystem pkgMeta)) =
+  traverse_ putStrLn $
+  catMaybes
+  [ Just pkgName
+  -- , Just pkgSystem
+  , description pkgMeta
+  , homepage pkgMeta
+  -- , T.unwords . T.words <$> longDescription pkgMeta
+  , T.unwords <$> maintainers pkgMeta
+  -- , T.unwords <$> outputsToInstall pkgMeta
+  -- , T.unwords <$> platforms pkgMeta
+  , Just pkgPath
+  , position pkgMeta
+  ]
+@
+
+\section{Main Executable}
+
+<<main :: IO ()>>=
+main :: IO ()
+main =
+  sh $ arguments >>= \case
+  [arg] -> nixQuery arg >>= \case
+           Just (PackageList pkgs) -> liftIO $ for_ pkgs printPackage
+           Nothing                 -> exit $ ExitFailure 1
+  _     -> do echo "TODO: usage"
+              exit $ ExitFailure 1
+@
+
+<<nixQuery :: Text -> Shell (Maybe PackageList)>>=
+nixQuery :: Text -> Shell (Maybe PackageList)
+nixQuery arg =
+  procStrict "nix-env" ["-qa", arg, "--json" ] empty >>= \case
+  (ExitSuccess,txt) -> pure $ decode (cs txt)
+  (status,_)        -> exit status
+@
+
+<<app/Main.hs>>=
+-- ----------------------------------------------------------------- [ Main.hs ]
+-- |
+-- Module      : Main
+-- Copyright   : (c) 2017, Eric Bailey
+-- License     : BSD-style (see LICENSE)
+--
+-- Maintainer  : eric@ericb.me
+-- Stability   : experimental
+-- Portability : portable
+--
+-- Main executable for nix-info.
+------------------------------------------------------------------------ [ EOH ]
+<<LambdaCase>>
+<<OverloadedStrings>>
+
+module Main (main) where
+
+import           NixInfo                 (printPackage)
+import           NixInfo.Types
+
+import           Control.Applicative     (empty)
+
+import           Data.Aeson              (decode)
+import           Data.Foldable           (for_)
+import           Data.String.Conversions (cs)
+import           Data.Text               (Text)
+
+import           Turtle                  (ExitCode (..), Shell, arguments, echo,
+                                          exit, liftIO, procStrict, sh)
+
+-- ----------------------------------------------------------- [ Private Parts ]
+
+<<nixQuery :: Text -> Shell (Maybe PackageList)>>
+
+-- -------------------------------------------------------------------- [ Main ]
+
+<<main :: IO ()>>
+
+-- --------------------------------------------------------------------- [ EOF ]
+@
+
+\section{As a Script}
+
+<<shebang>>=
+#! /usr/bin/env nix-shell
+#! nix-shell -i runhaskell -p "haskellPackages.ghcWithPackages (h: [ h.turtle h.aeson h.string-conversions ])"
+@
+
+<<LambdaCase>>=
+{-# LANGUAGE LambdaCase        #-}
+@
+
+<<script/nix-info>>=
+<<shebang>>
+
+<<LambdaCase>>
+
+<<OverloadedStrings>>
+<<TemplateHaskell>>
+
+module `Main (`main) where
+
+import           Prelude                 ()
+import           Prelude.Compat          hiding (`putStrLn)
+
+import           Control.Applicative     (`empty)
+
+<<NixInfo.Types Imports>>
+import           Data.Foldable           (`for_, `traverse_)
+import           Data.Maybe              (`catMaybes)
+import           Data.String.Conversions (`cs)
+
+<<Text IO Imports>>
+
+import           Turtle                  (`ExitCode (..), `Shell, `arguments, `echo,
+                                          `exit, `liftIO, `procStrict, `sh)
+
+<<Data Types>>
+
+<<FromJSON Instances>>
+
+-- -------------------------------------------------------- [ Helper Functions ]
+
+<<printPackage :: Package -> IO ()>>
+
+<<nixQuery :: Text -> Shell (Maybe PackageList)>>
+
+-- -------------------------------------------------------------------- [ Main ]
+
+<<main :: IO ()>>
+
+-- --------------------------------------------------------------------- [ EOF ]
+@
+
+
+\section{Other Files}
+
+<<Setup.hs>>=
+import Distribution.Simple
+
+main :: IO ()
+main = defaultMain
+@
+
+\section{Chunks}
+\nowebchunks
+
+\section{Index}
+\nowebindex
+
+\printbibliography
+
+\end{document}

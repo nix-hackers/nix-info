@@ -1,37 +1,32 @@
 #! /usr/bin/env nix-shell
 #! nix-shell -i runhaskell -p "haskellPackages.ghcWithPackages (h: [ h.turtle h.aeson h.string-conversions ])"
 
+{-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
 module Main (main) where
 
-import           Prelude                    ()
-import           Prelude.Compat             hiding (putStr, putStrLn)
+import           Prelude                 ()
+import           Prelude.Compat          hiding (putStrLn)
 
-import           Control.Applicative        (empty)
-import           Control.Category           ((>>>))
-import           Control.Monad              (fail, (>=>))
-import Control.Monad.IO.Class (MonadIO)
+import           Control.Applicative     (empty)
 
-import           Data.Aeson                 (FromJSON (..), Value (..), decode,
-                                             eitherDecode, encode, withObject)
-import           Data.Aeson.TH              (defaultOptions, deriveJSON)
-import Data.Aeson.Types (Parser(..))
+import           Data.Aeson
+import           Data.Aeson.TH           (defaultOptions, deriveJSON)
 
-import qualified Data.ByteString.Lazy.Char8 as BL
-import           Data.Foldable              (traverse_, for_)
-import qualified Data.HashMap.Lazy          as HM
-import           Data.Maybe                 (catMaybes)
-import           Data.String.Conversions    (cs)
-import           Data.Text                  (Text, concat)
-import qualified Data.Text                  as T
-import           Data.Text.IO               (putStr, putStrLn)
+import           Data.Foldable           (for_, traverse_)
+import qualified Data.HashMap.Lazy       as HM
+import           Data.Maybe              (catMaybes)
+import           Data.String.Conversions (cs)
+import           Data.Text               (Text)
+import qualified Data.Text               as T
+import           Data.Text.IO            (putStrLn)
 
-import           Turtle                     (ExitCode (ExitFailure), arguments,
-                                             echo, exit, inproc, liftIO,
-                                             lineToText, printf, procs, select,
-                                             sh)
+import           Turtle                  (ExitCode (..), Shell, arguments, echo,
+                                          exit, liftIO, procStrict, sh)
+
+-- -------------------------------------------------------------- [ Data Types ]
 
 data Meta = Meta
   { description      :: Maybe Text
@@ -44,16 +39,12 @@ data Meta = Meta
   }
   deriving (Show)
 
-$(deriveJSON defaultOptions ''Meta)
-
 data PackageInfo = PackageInfo
   { name   :: Text
   , system :: Text
   , meta   :: Meta
   }
   deriving (Show)
-
-$(deriveJSON defaultOptions ''PackageInfo)
 
 data Package = Package
   { path :: Text
@@ -63,15 +54,22 @@ data Package = Package
 
 newtype PackageList = PackageList [Package]
 
+-- ------------------------------------------------------ [ FromJSON Instances ]
+
+$(deriveJSON defaultOptions ''Meta)
+
+$(deriveJSON defaultOptions ''PackageInfo)
+
 instance FromJSON PackageList where
   parseJSON (Object v) =
     PackageList <$> traverse (\(p,y) -> Package p <$> parseJSON y) (HM.toList v)
   parseJSON _          = fail "non-object"
 
+-- -------------------------------------------------------- [ Helper Functions ]
 
--- printPkg :: MonadIO io => Package -> io ()
-printPkg :: Package -> IO ()
-printPkg (Package pkgPath (PackageInfo pkgName pkgSystem pkgMeta)) =
+-- printPackage :: MonadIO io => Package -> io ()
+printPackage :: Package -> IO ()
+printPackage (Package pkgPath (PackageInfo pkgName _pkgSystem pkgMeta)) =
   traverse_ putStrLn $
   catMaybes
   [ Just pkgName
@@ -86,14 +84,21 @@ printPkg (Package pkgPath (PackageInfo pkgName pkgSystem pkgMeta)) =
   , position pkgMeta
   ]
 
+nixQuery :: Text -> Shell (Maybe PackageList)
+nixQuery arg =
+  procStrict "nix-env" ["-qa", arg, "--json" ] empty >>= \case
+  (ExitSuccess,txt) -> pure $ decode (cs txt)
+  (status,_)        -> exit status
+
+-- -------------------------------------------------------------------- [ Main ]
+
 main :: IO ()
-main = sh $
-       do args <- arguments
-          case args of
-            [arg] ->
-              do res <- lineToText <$> inproc "nix-env" ["-qa", arg, "--json" ] empty
-                 liftIO $ case decode (cs res) :: Maybe PackageList of
-                            Just (PackageList pkgs) -> for_ pkgs printPkg
-                            Nothing                 -> empty
-            _ -> do echo "TODO: usage"
-                    exit $ ExitFailure 1
+main =
+  sh $ arguments >>= \case
+  [arg] -> nixQuery arg >>= \case
+           Just (PackageList pkgs) -> liftIO $ for_ pkgs printPackage
+           Nothing                 -> exit $ ExitFailure 1
+  _     -> do echo "TODO: usage"
+              exit $ ExitFailure 1
+
+-- --------------------------------------------------------------------- [ EOF ]

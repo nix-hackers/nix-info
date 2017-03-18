@@ -1,0 +1,99 @@
+#! /usr/bin/env nix-shell
+#! nix-shell -i runhaskell -p "haskellPackages.ghcWithPackages (h: [ h.turtle h.aeson h.string-conversions ])"
+
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell   #-}
+
+module Main (main) where
+
+import           Prelude                    ()
+import           Prelude.Compat             hiding (putStr, putStrLn)
+
+import           Control.Applicative        (empty)
+import           Control.Category           ((>>>))
+import           Control.Monad              (fail, (>=>))
+import Control.Monad.IO.Class (MonadIO)
+
+import           Data.Aeson                 (FromJSON (..), Value (..), decode,
+                                             eitherDecode, encode, withObject)
+import           Data.Aeson.TH              (defaultOptions, deriveJSON)
+import Data.Aeson.Types (Parser(..))
+
+import qualified Data.ByteString.Lazy.Char8 as BL
+import           Data.Foldable              (traverse_, for_)
+import qualified Data.HashMap.Lazy          as HM
+import           Data.Maybe                 (catMaybes)
+import           Data.String.Conversions    (cs)
+import           Data.Text                  (Text, concat)
+import qualified Data.Text                  as T
+import           Data.Text.IO               (putStr, putStrLn)
+
+import           Turtle                     (ExitCode (ExitFailure), arguments,
+                                             echo, exit, inproc, liftIO,
+                                             lineToText, printf, procs, select,
+                                             sh)
+
+data Meta = Meta
+  { description      :: Maybe Text
+  , homepage         :: Maybe Text
+  , longDescription  :: Maybe Text
+  , maintainers      :: Maybe [Text]
+  , outputsToInstall :: Maybe [Text]
+  , platforms        :: Maybe [Text]
+  , position         :: Maybe Text
+  }
+  deriving (Show)
+
+$(deriveJSON defaultOptions ''Meta)
+
+data PackageInfo = PackageInfo
+  { name   :: Text
+  , system :: Text
+  , meta   :: Meta
+  }
+  deriving (Show)
+
+$(deriveJSON defaultOptions ''PackageInfo)
+
+data Package = Package
+  { path :: Text
+  , info :: PackageInfo
+  }
+  deriving (Show)
+
+newtype PackageList = PackageList [Package]
+
+instance FromJSON PackageList where
+  parseJSON (Object v) =
+    PackageList <$> traverse (\(p,y) -> Package p <$> parseJSON y) (HM.toList v)
+  parseJSON _          = fail "non-object"
+
+
+-- printPkg :: MonadIO io => Package -> io ()
+printPkg :: Package -> IO ()
+printPkg (Package pkgPath (PackageInfo pkgName pkgSystem pkgMeta)) =
+  traverse_ putStrLn $
+  catMaybes
+  [ Just pkgName
+  -- , Just pkgSystem
+  , description pkgMeta
+  , homepage pkgMeta
+  -- , T.unwords . T.words <$> longDescription pkgMeta
+  , T.unwords <$> maintainers pkgMeta
+  -- , T.unwords <$> outputsToInstall pkgMeta
+  -- , T.unwords <$> platforms pkgMeta
+  , Just pkgPath
+  , position pkgMeta
+  ]
+
+main :: IO ()
+main = sh $
+       do args <- arguments
+          case args of
+            [arg] ->
+              do res <- lineToText <$> inproc "nix-env" ["-qa", arg, "--json" ] empty
+                 liftIO $ case decode (cs res) :: Maybe PackageList of
+                            Just (PackageList pkgs) -> for_ pkgs printPkg
+                            Nothing                 -> empty
+            _ -> do echo "TODO: usage"
+                    exit $ ExitFailure 1

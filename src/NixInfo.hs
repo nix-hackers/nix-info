@@ -1,5 +1,4 @@
 #line 244 "nix-info.nw"
--- -------------------------------------------------------------- [ NixInfo.hs ]
 -- |
 -- Module      : NixInfo
 -- Copyright   : (c) 2017, Eric Bailey
@@ -10,22 +9,24 @@
 -- Portability : portable
 --
 -- brew info clone for Nix
------------------------------------------------------------------------- [ EOH ]
+
 module NixInfo (printPackage) where
 
 import           NixInfo.Types
 
-import           Prelude        ()
-import           Prelude.Compat hiding (putStrLn)
+#line 414 "nix-info.nw"
+import           Prelude                 hiding (putStrLn)
 
-import           Data.Foldable  (traverse_)
-import           Data.Maybe     (catMaybes)
+#line 442 "nix-info.nw"
+import           Data.Foldable           (traverse_)
+import           Data.Maybe              (catMaybes)
 
-#line 239 "nix-info.nw"
-import qualified Data.Text      as T
-import           Data.Text.IO   (putStrLn)
+#line 263 "nix-info.nw"
+import qualified Data.Text               as T
+#line 437 "nix-info.nw"
+import           Data.Text.IO            (putStrLn)
 
-#line 274 "nix-info.nw"
+#line 270 "nix-info.nw"
 -- printPackage :: MonadIO io => Package -> io ()
 printPackage :: Package -> IO ()
 printPackage (Package pkgPath (PackageInfo pkgName _pkgSystem pkgMeta)) =
@@ -42,6 +43,3 @@ printPackage (Package pkgPath (PackageInfo pkgName _pkgSystem pkgMeta)) =
   , Just pkgPath
   , position pkgMeta
   ]
-
-#line 270 "nix-info.nw"
--- --------------------------------------------------------------------- [ EOF ]

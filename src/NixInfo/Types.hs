@@ -1,5 +1,4 @@
-#line 209 "nix-info.nw"
--- ---------------------------------------------------------------- [ Types.hs ]
+#line 217 "nix-info.nw"
 -- |
 -- Module      : NixInfo.Types
 -- Copyright   : (c) 2017, Eric Bailey
@@ -10,32 +9,34 @@
 -- Portability : portable
 --
 -- Data types and JSON parsers for nix-info
------------------------------------------------------------------------- [ EOH ]
-#line 89 "nix-info.nw"
+
+#line 400 "nix-info.nw"
 {-# LANGUAGE OverloadedStrings #-}
-#line 100 "nix-info.nw"
+#line 404 "nix-info.nw"
 {-# LANGUAGE TemplateHaskell   #-}
 
-#line 224 "nix-info.nw"
+#line 231 "nix-info.nw"
 module NixInfo.Types where
 
-#line 106 "nix-info.nw"
+#line 418 "nix-info.nw"
 import           Data.Aeson
-import           Data.Aeson.TH     (defaultOptions, deriveJSON)
+#line 422 "nix-info.nw"
+import           Data.Aeson.TH           (defaultOptions, deriveJSON)
 
-import qualified Data.HashMap.Lazy as HM
-import           Data.Text         (Text)
+#line 429 "nix-info.nw"
+import qualified Data.HashMap.Lazy       as HM
+import           Data.Text               (Text)
+import qualified Data.Text               as T
 
-#line 116 "nix-info.nw"
--- -------------------------------------------------------------- [ Data Types ]
+import           Network.URL            (URL, importURL)
 
-#line 138 "nix-info.nw"
+#line 137 "nix-info.nw"
 data Meta = Meta
   { description      :: Maybe Text
   , longDescription  :: Maybe Text
   , branch           :: Maybe Text
-  , homepage         :: Maybe Text
-  , downloadPage     :: Maybe Text
+  , homepage         :: Maybe NixURL
+  , downloadPage     :: Maybe NixURL
   , maintainers      :: Maybe [Text]
   , priority         :: Maybe Int
   , platforms        :: Maybe [Text]
@@ -47,7 +48,7 @@ data Meta = Meta
   }
   deriving (Show)
 
-#line 160 "nix-info.nw"
+#line 159 "nix-info.nw"
 data PackageInfo = PackageInfo
   { name   :: Text
   , system :: Text
@@ -55,29 +56,32 @@ data PackageInfo = PackageInfo
   }
   deriving (Show)
 
-#line 171 "nix-info.nw"
+#line 170 "nix-info.nw"
 data Package = Package
   { path :: Text
   , info :: PackageInfo
   }
   deriving (Show)
 
-#line 184 "nix-info.nw"
+#line 183 "nix-info.nw"
 newtype PackageList = PackageList [Package]
 
-#line 198 "nix-info.nw"
--- ------------------------------------------------------ [ FromJSON Instances ]
+#line 188 "nix-info.nw"
+newtype NixURL = NixURL URL deriving (Show)
 
-#line 190 "nix-info.nw"
+#line 194 "nix-info.nw"
 $(deriveJSON defaultOptions ''Meta)
 
 $(deriveJSON defaultOptions ''PackageInfo)
 
-#line 202 "nix-info.nw"
+#line 204 "nix-info.nw"
 instance FromJSON PackageList where
   parseJSON (Object v) =
     PackageList <$> traverse (\(p,y) -> Package p <$> parseJSON y) (HM.toList v)
   parseJSON _          = fail "non-object"
 
-#line 232 "nix-info.nw"
--- --------------------------------------------------------------------- [ EOF ]
+instance FromJSON NixURL where
+  parseJSON (String t) = case importURL (T.unpack t) of
+                           Just url -> pure $ NixURL url
+                           Nothing  -> fail "no parse"
+  parseJSON _          = fail "non-string"

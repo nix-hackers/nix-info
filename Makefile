@@ -21,8 +21,7 @@ weave  = noweave \
 
 .PHONY: all build
 
-# all: ${srcs} build docs/nix-info.pdf
-all: ${srcs} script/nix-info docs/nix-info.pdf
+all: build script/nix-info docs/nix-info.pdf
 
 script/nix-info: nix-info.nw
 	notangle -R$@ $< -filter btdefn | cpif $@

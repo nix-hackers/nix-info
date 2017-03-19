@@ -1,4 +1,4 @@
-#line 412 "nix-info.nw"
+#line 456 "nix-info.nw"
 import Distribution.Simple
 
 main :: IO ()

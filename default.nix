@@ -4,8 +4,8 @@ let
 
   inherit (nixpkgs) pkgs;
 
-  f = { mkDerivation, aeson, base, base-compat, stdenv
-      , string-conversions, text, turtle, unordered-containers
+  f = { mkDerivation, aeson, base, stdenv, string-conversions, text
+      , turtle, unordered-containers, url
       }:
       mkDerivation {
         pname = "nix-info";
@@ -14,12 +14,10 @@ let
         isLibrary = true;
         isExecutable = true;
         libraryHaskellDepends = [
-          aeson base base-compat string-conversions text turtle
-          unordered-containers
+          aeson base string-conversions text turtle unordered-containers url
         ];
         executableHaskellDepends = [
-          aeson base base-compat string-conversions text turtle
-          unordered-containers
+          aeson base string-conversions text turtle unordered-containers url
         ];
         homepage = "https://github.com/nix-hackers/nix-info";
         description = "brew info clone for Nix";

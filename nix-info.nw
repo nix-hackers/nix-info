@@ -7,6 +7,8 @@
 
 \usepackage[american]{babel}
 
+\usepackage{blindtext}
+
 \usepackage[style=alphabetic,backend=biber]{biblatex}
 
 \usepackage{csquotes}
@@ -56,16 +58,23 @@
 % \newcommand{\stylehook}{\marginpar{\raggedright\sl style hook}}
 
 \usepackage{todonotes}
-% \newcommand{\todo}[2][1]{\marginnote[#1\baselineskip]{\bf \color{red}
-%     $\leftarrow$ TODO: #2}}
 
 \newmintinline[hsk]{haskell}{}
+\newmintinline[bash]{bash}{}
+
+\usepackage{tikz}
+\usetikzlibrary{cd}
+
+\newcommand{\fnhref}[2]{%
+  \href{#1}{#2}\footnote{\url{#1}}%
+}
 
 \begin{document}
+
 \maketitle
 
 \begin{abstract}
-  \todo[inline]{write abstract}
+  \todo[inline]{\blindtext}
 \end{abstract}
 
 % \tableofcontents
@@ -75,46 +84,23 @@
 \newthought{The reason to use Haskell} for \tt{nix-info} is so we can have
 strong, static typing.
 
-\todo{flesh this out}
+\todo[inline]{\blindtext}
 
-\section{Language Extensions}
-
-Since we're going to be juggling \hsk{Text}, (lazy) \hsk{ByteString}, and
-\hsk{Line}, we use the \hsk{OverloadedStrings}
-extension \parencite{Charles2014}.
-
-\todo{add links to data types}
-
-<<OverloadedStrings>>=
-{-# LANGUAGE OverloadedStrings #-}
-@
-
-For generic \hsk{Aeson} [[<<magic>>]], we use [[TemplateHaskell]]. \\
-
-\todo{cite magic}
-
-\todo{flesh this out}
-
-\marginnote[2\baselineskip]{Do you believe in [[<<magic>>]]?}
-<<TemplateHaskell>>=
-{-# LANGUAGE TemplateHaskell   #-}
-@
+\newpage
 
 \section{Data Types}
 
-<<NixInfo.Types Imports>>=
-import           Data.Aeson
-import           Data.Aeson.TH     (`defaultOptions, `deriveJSON)
 
-import qualified Data.HashMap.Lazy as `HM
-import           Data.Text         (`Text)
-@
-
-\newthought{Data Types}
-
+\begin{margintable}[4.75em]
+  \begin{tabular}{rl}
+    [[Meta]] & ``standard meta-attributes'' \cite{nixpkgs-manual} \\[1.75em]
+    [[PackageInfo]] & [[name]], [[system]] and [[meta]] \\[1.75em]
+    [[Package]] & [[path]] and [[info]] \\[1.75em]
+    [[PackageList]] & \hsk{[}[[Package]]\hsk{]} \\[1.75em]
+    [[NixURL]] & [[URL]]
+  \end{tabular}
+\end{margintable}
 <<Data Types>>=
--- -------------------------------------------------------------- [ Data Types ]
-
 <<Meta>>
 
 <<PackageInfo>>
@@ -122,33 +108,46 @@ import           Data.Text         (`Text)
 <<Package>>
 
 <<PackageList>>
+
+<<NixURL>>
 @
 
-asd
+The standard meta-attributes are documented in the Nixpkgs Contributors
+Guide \parencite{nixpkgs-manual}. \bash{nix-env}, which is called by
+\bash{nix-info} in [[<<nixQuery>>]], returns a nested
+\fnhref{http://hackage.haskell.org/package/aeson-1.1.1.0/docs/Data-Aeson-Types.html\#t:Object}{\hsk{Object}},
+with relationships as described by the following diagram.
 
+\begin{figure}[ht]
+  \begin{tikzcd}
+    [[PackageList]] \dar[maps to, two heads] & [[PackageInfo]] \ar[dd, "..."]
+    \ar[dr, bend right=20, "[[meta]]"] & Bool \\
+    [[Package]] \ar[ur, "[[info]]"] \drar["[[path]]"] & & [[Meta]] \dlar["..."]
+    \ar[d, "..."] \rar["int"] \ar[u, "bool"] \drar["..."] & Int \\
+    & [[Text]] & \hsk{[}[[Text]]\hsk{]} & [[NixURL]]
+  \end{tikzcd}
+  \caption{whatever}
+\end{figure}
 
-\newthought{The standard meta-attributes} are documented in the Nixpkgs
-Contributors Guide \parencite{nixpkgs-manual}.
-
-\todo{flesh this out}
+\todo[inline]{Flesh this out.}
 
 \todo{use better types than just \hsk{Text} everywhere \ldots}
 
 <<Meta>>=
 data `Meta = Meta
-  { description      :: Maybe Text
-  , longDescription  :: Maybe Text
-  , branch           :: Maybe Text
-  , homepage         :: Maybe Text
-  , downloadPage     :: Maybe Text
-  , maintainers      :: Maybe [Text]
-  , priority         :: Maybe Int
-  , platforms        :: Maybe [Text]
-  , hydraPlatforms   :: Maybe [Text]
-  , broken           :: Maybe Bool
-  , updateWalker     :: Maybe Bool
-  , outputsToInstall :: Maybe [Text]
-  , position         :: Maybe Text
+  { `description      :: Maybe Text
+  , `longDescription  :: Maybe Text
+  , `branch           :: Maybe Text
+  , `homepage         :: Maybe NixURL
+  , `downloadPage     :: Maybe NixURL
+  , `maintainers      :: Maybe [Text]
+  , `priority         :: Maybe Int
+  , `platforms        :: Maybe [Text]
+  , `hydraPlatforms   :: Maybe [Text]
+  , `broken           :: Maybe Bool
+  , `updateWalker     :: Maybe Bool
+  , `outputsToInstall :: Maybe [Text]
+  , `position         :: Maybe Text
   }
   deriving (Show)
 @
@@ -158,9 +157,9 @@ data `Meta = Meta
 
 <<PackageInfo>>=
 data `PackageInfo = PackageInfo
-  { name   :: Text
-  , system :: Text
-  , meta   :: Meta
+  { `name   :: Text
+  , `system :: Text
+  , `meta   :: Meta
   }
   deriving (Show)
 @
@@ -169,8 +168,8 @@ data `PackageInfo = PackageInfo
 
 <<Package>>=
 data `Package = Package
-  { path :: Text
-  , info :: PackageInfo
+  { `path :: Text
+  , `info :: PackageInfo
   }
   deriving (Show)
 @
@@ -184,9 +183,14 @@ our [[<<FromJSON Instances>>]].
 newtype `PackageList = PackageList [Package]
 @
 
+\todo{Mention the avoidance of the orphan instance.}
+<<NixURL>>=
+newtype `NixURL = NixURL URL deriving (Show)
+@
+
 \todo{describe this}
 
-<<magic>>=
+<<magically derive ToJSON and FromJSON instances>>=
 $(deriveJSON defaultOptions ''Meta)
 
 $(deriveJSON defaultOptions ''PackageInfo)
@@ -195,18 +199,21 @@ $(deriveJSON defaultOptions ''PackageInfo)
 \todo{describe this}
 
 <<FromJSON Instances>>=
--- ------------------------------------------------------ [ FromJSON Instances ]
-
-<<magic>>
+<<magically derive ToJSON and FromJSON instances>>
 
 instance FromJSON PackageList where
   parseJSON (Object v) =
     PackageList <$> traverse (\(p,y) -> Package p <$> parseJSON y) (HM.toList v)
   parseJSON _          = fail "non-object"
+
+instance FromJSON NixURL where
+  parseJSON (String t) = case importURL (T.unpack t) of
+                           Just url -> pure $ NixURL url
+                           Nothing  -> fail "no parse"
+  parseJSON _          = fail "non-string"
 @
 
 <<src/NixInfo/Types.hs>>=
--- ---------------------------------------------------------------- [ Types.hs ]
 -- |
 -- Module      : NixInfo.Types
 -- Copyright   : (c) 2017, Eric Bailey
@@ -217,7 +224,7 @@ instance FromJSON PackageList where
 -- Portability : portable
 --
 -- Data types and JSON parsers for nix-info
------------------------------------------------------------------------- [ EOH ]
+
 <<OverloadedStrings>>
 <<TemplateHaskell>>
 
@@ -228,20 +235,12 @@ module NixInfo.Types where
 <<Data Types>>
 
 <<FromJSON Instances>>
-
--- --------------------------------------------------------------------- [ EOF ]
 @ %def NixInfo.Types
 @ %def FromJSON
 
 \section{Helper Functions}
 
-<<Text IO Imports>>=
-import qualified Data.Text      as `T
-import           Data.Text.IO   (`putStrLn)
-@
-
 <<src/NixInfo.hs>>=
--- -------------------------------------------------------------- [ NixInfo.hs ]
 -- |
 -- Module      : NixInfo
 -- Copyright   : (c) 2017, Eric Bailey
@@ -252,25 +251,22 @@ import           Data.Text.IO   (`putStrLn)
 -- Portability : portable
 --
 -- brew info clone for Nix
------------------------------------------------------------------------- [ EOH ]
+
 module NixInfo (printPackage) where
 
 import           NixInfo.Types
 
-import           Prelude        ()
-import           Prelude.Compat hiding (putStrLn)
+<<hide Prelude.putStrLn>>
 
-import           Data.Foldable  (traverse_)
-import           Data.Maybe     (catMaybes)
+<<import traverse\_, catMaybes>>
 
-<<Text IO Imports>>
+import qualified Data.Text               as T
+<<import Data.Text.IO>>
 
-<<printPackage :: Package -> IO ()>>
-
--- --------------------------------------------------------------------- [ EOF ]
+<<printPackage>>
 @
 
-<<printPackage :: Package -> IO ()>>=
+<<printPackage>>=
 -- printPackage :: MonadIO io => Package -> io ()
 printPackage :: Package -> IO ()
 printPackage (Package pkgPath (PackageInfo pkgName _pkgSystem pkgMeta)) =
@@ -291,27 +287,26 @@ printPackage (Package pkgPath (PackageInfo pkgName _pkgSystem pkgMeta)) =
 
 \section{Main Executable}
 
-<<main :: IO ()>>=
+<<main>>=
 main :: IO ()
-main =
+`main =
   sh $ arguments >>= \case
   [arg] -> nixQuery arg >>= \case
-           Just (PackageList pkgs) -> liftIO $ for_ pkgs printPackage
+           Just (PackageList pkgs) -> liftIO $ traverse_ printPackage pkgs
            Nothing                 -> exit $ ExitFailure 1
   _     -> do echo "TODO: usage"
               exit $ ExitFailure 1
 @
 
-<<nixQuery :: Text -> Shell (Maybe PackageList)>>=
+<<nixQuery>>=
 nixQuery :: Text -> Shell (Maybe PackageList)
-nixQuery arg =
+`nixQuery arg =
   procStrict "nix-env" ["-qa", arg, "--json" ] empty >>= \case
   (ExitSuccess,txt) -> pure $ decode (cs txt)
   (status,_)        -> exit status
 @
 
 <<app/Main.hs>>=
--- ----------------------------------------------------------------- [ Main.hs ]
 -- |
 -- Module      : Main
 -- Copyright   : (c) 2017, Eric Bailey
@@ -322,7 +317,7 @@ nixQuery arg =
 -- Portability : portable
 --
 -- Main executable for nix-info.
------------------------------------------------------------------------- [ EOH ]
+
 <<LambdaCase>>
 <<OverloadedStrings>>
 
@@ -331,32 +326,23 @@ module Main (main) where
 import           NixInfo                 (printPackage)
 import           NixInfo.Types
 
-import           Control.Applicative     (empty)
-
-import           Data.Aeson              (decode)
-import           Data.Foldable           (for_)
+<<import Data.Aeson>>
+import           Data.Foldable           (traverse_)
 import           Data.String.Conversions (cs)
 import           Data.Text               (Text)
 
-import           Turtle                  (ExitCode (..), Shell, arguments, echo,
-                                          exit, liftIO, procStrict, sh)
+<<import Turtle>>
 
--- ----------------------------------------------------------- [ Private Parts ]
+<<nixQuery>>
 
-<<nixQuery :: Text -> Shell (Maybe PackageList)>>
-
--- -------------------------------------------------------------------- [ Main ]
-
-<<main :: IO ()>>
-
--- --------------------------------------------------------------------- [ EOF ]
+<<main>>
 @
 
 \section{As a Script}
 
 <<shebang>>=
 #! /usr/bin/env nix-shell
-#! nix-shell -i runhaskell -p "haskellPackages.ghcWithPackages (h: [ h.turtle h.aeson h.string-conversions ])"
+#! nix-shell -i runhaskell -p "haskellPackages.ghcWithPackages (h: [ h.turtle h.aeson h.string-conversions h.url ])"
 @
 
 <<LambdaCase>>=
@@ -373,38 +359,96 @@ import           Turtle                  (ExitCode (..), Shell, arguments, echo,
 
 module `Main (`main) where
 
-import           Prelude                 ()
-import           Prelude.Compat          hiding (`putStrLn)
-
-import           Control.Applicative     (`empty)
+<<hide Prelude.putStrLn>>
 
 <<NixInfo.Types Imports>>
-import           Data.Foldable           (`for_, `traverse_)
-import           Data.Maybe              (`catMaybes)
+
+<<import traverse\_, catMaybes>>
 import           Data.String.Conversions (`cs)
 
-<<Text IO Imports>>
+<<import Data.Text.IO>>
 
-import           Turtle                  (`ExitCode (..), `Shell, `arguments, `echo,
-                                          `exit, `liftIO, `procStrict, `sh)
+<<import Turtle>>
 
 <<Data Types>>
 
 <<FromJSON Instances>>
 
--- -------------------------------------------------------- [ Helper Functions ]
+<<printPackage>>
 
-<<printPackage :: Package -> IO ()>>
+<<nixQuery>>
 
-<<nixQuery :: Text -> Shell (Maybe PackageList)>>
-
--- -------------------------------------------------------------------- [ Main ]
-
-<<main :: IO ()>>
-
--- --------------------------------------------------------------------- [ EOF ]
+<<main>>
 @
 
+\section{Language Extensions}
+
+To manage juggling
+\fnhref{https://hackage.haskell.org/package/text/docs/Data-Text.html\#t:Text}{\hsk{Text}},
+(lazy)
+\fnhref{https://hackage.haskell.org/package/bytestring/docs/Data-ByteString.html\#t:ByteString}{\hsk{ByteString}},
+and
+\fnhref{https://hackage.haskell.org/package/turtle-1.3.2/docs/Turtle-Line.html\#t:Line}{\hsk{Line}}
+values, use the [[<<OverloadedStrings>>]] language
+extension \parencite{Charles2014}.
+
+Enable the [[<<TemplateHaskell>>]] language extension \parencite{Westfall2014} to
+[[<<magically derive ToJSON and FromJSON instances>>]] from record definitions
+via \fnhref{https://hackage.haskell.org/package/aeson-1.1.1.0/docs/Data-Aeson-TH.html}{\hsk{Data.Aeson.TH}}
+
+<<OverloadedStrings>>=
+{-# LANGUAGE OverloadedStrings #-}
+@
+
+<<TemplateHaskell>>=
+{-# LANGUAGE TemplateHaskell   #-}
+@
+
+\section{Imports}
+
+Hide
+\fnhref{https://hackage.haskell.org/package/base/docs/Prelude.html\#v:putStrLn}{\hsk{Prelude.putStrLn}},
+so we can [[<<import Data.Text.IO>>]] \fnhref{https://hackage.haskell.org/package/text/docs/Data-Text-IO.html\#v:putStrLn}{\hsk{(putStrLn)}}.
+
+<<hide Prelude.putStrLn>>=
+import           Prelude                 hiding (putStrLn)
+@
+
+<<import Data.Aeson>>=
+import           Data.Aeson
+@
+
+<<import Data.Aeson.TH>>=
+import           Data.Aeson.TH           (`defaultOptions, `deriveJSON)
+@
+
+<<NixInfo.Types Imports>>=
+<<import Data.Aeson>>
+<<import Data.Aeson.TH>>
+
+import qualified Data.HashMap.Lazy       as `HM
+import           Data.Text               (`Text)
+import qualified Data.Text               as `T
+
+import           Network.URL            (`URL, `importURL)
+@
+
+<<import Data.Text.IO>>=
+import           Data.Text.IO            (`putStrLn)
+@
+
+
+<<import traverse\_, catMaybes>>=
+import           Data.Foldable           (`traverse_)
+import           Data.Maybe              (`catMaybes)
+@
+
+
+<<import Turtle>>=
+import           Turtle                  (`ExitCode (..), `Shell, `arguments,
+                                          `echo, `empty, `exit, `liftIO,
+                                          `procStrict, `sh)
+@
 
 \section{Other Files}
 
@@ -420,6 +464,8 @@ main = defaultMain
 
 \section{Index}
 \nowebindex
+
+\newpage
 
 \printbibliography
 

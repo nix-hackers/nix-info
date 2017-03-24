@@ -1,0 +1,529 @@
+% -*- ess-noweb-default-code-mode: haskell-mode; -*-
+\documentclass[nobib]{tufte-handout}
+
+\usepackage[T1]{fontenc}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage[american]{babel}
+
+\usepackage{blindtext}
+
+\usepackage[style=alphabetic,backend=biber]{biblatex}
+
+\usepackage{csquotes}
+
+\addbibresource{nix-info.bib}
+
+\usepackage{noweb}
+
+\usepackage{color}
+% https://commons.wikimedia.org/wiki/File:Erlang_logo.svg
+\definecolor{ErlangRed}{HTML}{A90533}
+
+\usepackage{hyperref}
+\hypersetup{
+  bookmarks=true,
+  pdffitwindow=true,
+  pdfstartview={FitH},
+  pdftitle={nix-info}
+  pdfauthor={Eric Bailey <eric@ericb.me>},
+  pdfsubject={brew info clone for Nix},
+  pdfkeywords={nix, nixpkgs, metadata, command-line-tool, haskell, literate programming, noweb},
+  colorlinks=true,
+  linkcolor=ErlangRed,
+  urlcolor=ErlangRed
+}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\usepackage[outputdir=tex]{minted}
+
+% NOTE: Use Tufte instead of noweb page style.
+% \pagestyle{noweb}
+% NOTE: Use shift option for wide code.
+% \noweboptions{smallcode,shortxref,webnumbering,english}
+ \noweboptions{shift,smallcode,shortxref,webnumbering,english,noidentxref}
+
+\title{
+  nix-info
+  \thanks{a \tt{brew info} clone for \href{https://nixos.org/nix/}{Nix}.}
+}
+
+\author{Eric Bailey}
+
+\date{March 18, 2017}
+
+% \newcommand{\stylehook}{\marginpar{\raggedright\sl style hook}}
+
+\usepackage{todonotes}
+
+\newmintinline[hsk]{haskell}{}
+\newmintinline[bash]{bash}{}
+
+\usepackage{tikz}
+\usetikzlibrary{cd}
+
+% \newcommand{\fnhref}[2]{%
+%   \href{#1}{#2}\footnote{\url{#1}}%
+% }
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+  \todo[inline]{\blindtext}
+\end{abstract}
+
+% \tableofcontents
+% \newpage
+
+
+\newthought{The motivation for using Haskell} to write \tt{nix-info} is its
+strong, static typing, etc, etc... \todo{fixme: obviously}
+
+\todo[inline]{\blindtext}
+
+\newpage
+
+\section{Data Types}
+
+
+\begin{margintable}[4.75em]
+  \begin{tabular}{rl}
+    [[Meta]] & ``standard meta-attributes'' \cite{nixpkgs-manual} \\[1.75em]
+    [[PackageInfo]] & [[name]], [[system]] and [[meta]] \\[1.75em]
+    [[Package]] & [[path]] and [[info]] \\[1.75em]
+    [[PackageList]] & \hsk{[}[[Package]]\hsk{]} \\[1.75em]
+    [[NixURL]] & [[URL]]
+  \end{tabular}
+\end{margintable}
+<<Data Types>>=
+<<Meta>>
+
+<<PackageInfo>>
+
+<<Package>>
+
+<<PackageList>>
+
+<<NixURL>>
+@
+
+The standard meta-attributes are documented in the Nixpkgs Contributors
+Guide \parencite{nixpkgs-manual}. \bash{nix-env}, which is called by
+\bash{nix-info} in [[<<nixQuery>>]], returns a nested
+\href{http://hackage.haskell.org/package/aeson-1.1.1.0/docs/Data-Aeson-Types.html\#t:Object}{\hsk{Object}},
+with relationships as described by the following diagram.
+
+\begin{figure}[ht]
+  \begin{tikzcd}
+    [[PackageList]] \dar[maps to, two heads] & [[PackageInfo]] \ar[dd, "..."]
+    \drar["[[meta]]"] & Bool \\
+    [[Package]] \urar["[[info]]"] \drar["[[path]]"] & & [[Meta]] \dlar["..."]
+    \ar[d, "..."] \rar["int"] \ar[u, "bool"] \drar["..."] & Int \\
+    & [[Text]] & \hsk{[}[[Text]]\hsk{]} & [[NixURL]]
+  \end{tikzcd}
+  \caption{}
+\end{figure}
+
+\todo[inline]{Flesh this out.}
+
+\todo{use better types than just \hsk{Text} everywhere \ldots}
+
+<<Meta>>=
+data `Meta = Meta
+  { `description      :: Maybe Text
+  , `longDescription  :: Maybe Text
+  , `branch           :: Maybe Text
+  , `homepage         :: Maybe NixURL
+  , `downloadPage     :: Maybe NixURL
+  , `maintainers      :: Maybe [Text]
+  , `priority         :: Maybe Int
+  , `platforms        :: Maybe [Text]
+  , `hydraPlatforms   :: Maybe [Text]
+  , `broken           :: Maybe Bool
+  , `updateWalker     :: Maybe Bool
+  , `outputsToInstall :: Maybe [Text]
+  , `position         :: Maybe Text
+  }
+  deriving (Show)
+@
+
+
+\todo{describe this}
+
+<<PackageInfo>>=
+data `PackageInfo = PackageInfo
+  { `name   :: Text
+  , `system :: Text
+  , `meta   :: Meta
+  }
+  deriving (Show)
+@
+
+\todo{describe this}
+
+<<Package>>=
+data `Package = Package
+  { `path :: Text
+  , `info :: PackageInfo
+  }
+  deriving (Show)
+@
+
+This \hsk{newtype} is a cheap trick to avoid using \hsk{FlexibleInstances} for
+the automagically derived [[<<FromJSON Instances>>]].
+
+\todo{describe why}
+
+<<PackageList>>=
+newtype `PackageList = PackageList [Package]
+@
+
+\todo{Mention the avoidance of the orphan instance.}
+<<NixURL>>=
+newtype `NixURL = NixURL URL deriving (Show)
+@
+
+\todo{describe this}
+
+<<magically derive ToJSON and FromJSON instances>>=
+$(deriveJSON defaultOptions ''Meta)
+
+$(deriveJSON defaultOptions ''PackageInfo)
+@
+
+\todo{describe this}
+
+<<FromJSON Instances>>=
+<<magically derive ToJSON and FromJSON instances>>
+
+instance FromJSON PackageList where
+  parseJSON (Object v) =
+    PackageList <$> traverse (\(p,y) -> Package p <$> parseJSON y) (HM.toList v)
+  parseJSON _          = fail "non-object"
+
+instance FromJSON NixURL where
+  parseJSON (String t) = case importURL (T.unpack t) of
+                           Just url -> pure $ NixURL url
+                           Nothing  -> fail "no parse"
+  parseJSON _          = fail "non-string"
+
+instance ToJSON NixURL where
+  toJSON (NixURL url)     = String (T.pack (exportURL url))
+  toEncoding (NixURL url) = text (T.pack (exportURL url))
+@
+
+<<src/NixInfo/Types.hs>>=
+-- |
+-- Module      : NixInfo.Types
+-- Copyright   : (c) 2017, Eric Bailey
+-- License     : BSD-style (see LICENSE)
+--
+-- Maintainer  : eric@ericb.me
+-- Stability   : experimental
+-- Portability : portable
+--
+-- Data types and JSON parsers for nix-info
+
+<<OverloadedStrings>>
+<<TemplateHaskell>>
+
+module NixInfo.Types where
+
+<<NixInfo.Types Imports>>
+
+<<Data Types>>
+
+<<FromJSON Instances>>
+@ %def NixInfo.Types
+@ %def FromJSON
+
+\section{Helper Functions}
+
+<<printPackage>>=
+-- printPackage :: MonadIO io => Package -> io ()
+printPackage :: Package -> IO ()
+printPackage (Package pkgPath (PackageInfo pkgName _pkgSystem pkgMeta)) =
+  traverse_ putStrLn $
+  catMaybes
+  [ Just pkgName
+  -- , Just pkgSystem
+  , description pkgMeta
+  , T.pack . exportURL . (\(NixURL url) -> url) <$> homepage pkgMeta
+  -- , T.unwords . T.words <$> longDescription pkgMeta
+  , T.unwords <$> maintainers pkgMeta
+  -- , T.unwords <$> outputsToInstall pkgMeta
+  -- , T.unwords <$> platforms pkgMeta
+  , Just pkgPath
+  , position pkgMeta
+  ]
+@
+
+
+<<src/NixInfo.hs>>=
+-- |
+-- Module      : NixInfo
+-- Copyright   : (c) 2017, Eric Bailey
+-- License     : BSD-style (see LICENSE)
+--
+-- Maintainer  : eric@ericb.me
+-- Stability   : experimental
+-- Portability : portable
+--
+-- brew info clone for Nix
+
+module NixInfo (printPackage) where
+
+import           NixInfo.Types
+
+<<hide Prelude.putStrLn>>
+
+<<import traverse\_, catMaybes>>
+
+import qualified Data.Text               as T
+<<import Data.Text.IO>>
+
+import           Network.URL             (`exportURL)
+
+<<printPackage>>
+@
+
+\section{Main Executable}
+
+<<nixQuery>>=
+nixQuery :: Text -> Shell (Maybe PackageList)
+`nixQuery arg =
+  procStrict "nix-env" ["-qa", arg, "--json" ] empty >>= \case
+  (ExitSuccess,txt) -> pure $ decode (cs txt)
+  (status,_)        -> exit status
+@
+
+<<main>>=
+main :: IO ()
+`main =
+  sh $ arguments >>= \case
+  [arg] -> nixQuery arg >>= \case
+           Just (PackageList pkgs) -> liftIO $ traverse_ printPackage pkgs
+           Nothing                 -> exit $ ExitFailure 1
+  _     -> do echo "TODO: usage"
+              exit $ ExitFailure 1
+@
+
+<<app/Main.hs>>=
+-- |
+-- Module      : Main
+-- Copyright   : (c) 2017, Eric Bailey
+-- License     : BSD-style (see LICENSE)
+--
+-- Maintainer  : eric@ericb.me
+-- Stability   : experimental
+-- Portability : portable
+--
+-- Main executable for nix-info.
+
+<<LambdaCase>>
+<<OverloadedStrings>>
+
+module Main (main) where
+
+import           NixInfo                 (printPackage)
+import           NixInfo.Types
+
+<<import Data.Aeson>>
+import           Data.Foldable           (traverse_)
+import           Data.String.Conversions (cs)
+import           Data.Text               (Text)
+
+<<import Turtle>>
+
+<<nixQuery>>
+
+<<main>>
+@
+
+\section{As a Script}
+
+<<shebang>>=
+#! /usr/bin/env nix-shell
+#! nix-shell -i runhaskell -p "haskellPackages.ghcWithPackages (h: [ h.turtle h.aeson h.string-conversions h.url ])"
+@
+
+<<script/nix-info>>=
+<<shebang>>
+
+<<LambdaCase>>
+
+<<OverloadedStrings>>
+<<TemplateHaskell>>
+
+module `Main (`main) where
+
+<<hide Prelude.putStrLn>>
+
+<<NixInfo.Types Imports>>
+
+<<import traverse\_, catMaybes>>
+import           Data.String.Conversions (`cs)
+
+<<import Data.Text.IO>>
+
+<<import Turtle>>
+
+<<Data Types>>
+
+<<FromJSON Instances>>
+
+<<printPackage>>
+
+<<nixQuery>>
+
+<<main>>
+@
+
+\section{Language Extensions}
+
+For brevity:
+
+<<LambdaCase>>=
+{-# LANGUAGE LambdaCase        #-}
+@
+
+To manage juggling
+\href{https://hackage.haskell.org/package/text/docs/Data-Text.html\#t:Text}{\hsk{Text}},
+(lazy)
+\href{https://hackage.haskell.org/package/bytestring/docs/Data-ByteString.html\#t:ByteString}{\hsk{ByteString}},
+and
+\href{https://hackage.haskell.org/package/turtle-1.3.2/docs/Turtle-Line.html\#t:Line}{\hsk{Line}}
+values, use the [[<<OverloadedStrings>>]] language
+extension \parencite{Charles2014}.
+
+<<OverloadedStrings>>=
+{-# LANGUAGE OverloadedStrings #-}
+@
+
+Enable the [[<<TemplateHaskell>>]] language extension \parencite{Westfall2014} to
+[[<<magically derive ToJSON and FromJSON instances>>]] from record definitions
+via \href{https://hackage.haskell.org/package/aeson-1.1.1.0/docs/Data-Aeson-TH.html}{\hsk{Data.Aeson.TH}}
+
+<<TemplateHaskell>>=
+{-# LANGUAGE TemplateHaskell   #-}
+@
+
+\section{Imports}
+
+Hide
+\href{https://hackage.haskell.org/package/base/docs/Prelude.html\#v:putStrLn}{\hsk{Prelude.putStrLn}},
+so we can [[<<import Data.Text.IO>>]] \href{https://hackage.haskell.org/package/text/docs/Data-Text-IO.html\#v:putStrLn}{\hsk{(putStrLn)}}.
+
+<<hide Prelude.putStrLn>>=
+import           Prelude                 hiding (putStrLn)
+@
+
+<<import Data.Aeson>>=
+import           Data.Aeson
+@ %def Data.Aeson
+
+<<import Data.Aeson.Encoding>>=
+import           Data.Aeson.Encoding     (`text)
+@ %def Data.Aeson.Encoding
+
+<<import Data.Aeson.TH>>=
+import           Data.Aeson.TH           (`defaultOptions, `deriveJSON)
+@ %def Data.Aeson.TH
+
+<<NixInfo.Types Imports>>=
+<<import Data.Aeson>>
+<<import Data.Aeson.Encoding>>
+<<import Data.Aeson.TH>>
+
+import qualified Data.HashMap.Lazy       as `HM
+import           Data.Text               (`Text)
+import qualified Data.Text               as `T
+
+import           Network.URL            (`URL, `exportURL, `importURL)
+@ %def Data.HashMap.Lazy
+@ %def Data.Text
+@ %def Network.URL
+
+<<import Data.Text.IO>>=
+import           Data.Text.IO            (`putStrLn)
+@ %def Data.Text.IO
+
+
+<<import traverse\_, catMaybes>>=
+import           Data.Foldable           (`traverse_)
+import           Data.Maybe              (`catMaybes)
+@ %def Data.Foldable
+@ %def Data.Maybe
+
+
+<<import Turtle>>=
+import           Turtle                  (`ExitCode (..), `Shell, `arguments,
+                                          `echo, `empty, `exit, `liftIO,
+                                          `procStrict, `sh)
+@ %def Turtle
+
+\section{Package Setup}
+
+<<package.yaml>>=
+name: nix-info
+version: '0.1.0.0'
+synopsis: brew info clone for Nix
+description: See README at <https://github.com/nix-hackers/nix-info#readme>
+category: Development
+stability: experimental
+homepage: https://github.com/nix-hackers/nix-info
+github: nix-hackers/nix-info
+author: Eric Bailey
+maintainer: eric@ericb.me
+license: BSD3
+extra-source-files:
+- ChangeLog.md
+
+ghc-options: -Wall
+
+dependencies:
+- base >=4.9 && <4.10
+- aeson >=1.0 && <1.2
+- string-conversions >=0.4 && <0.5
+- text >=1.2 && <1.3
+- turtle >=1.3 && <1.4
+- unordered-containers >=0.2 && <0.3
+- url >=2.1 && <2.2
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - NixInfo
+  - NixInfo.Types
+
+executables:
+  nix-info:
+    main: Main.hs
+    source-dirs: app
+    dependencies:
+    - nix-info
+@
+
+<<Setup.hs>>=
+import Distribution.Simple
+
+main :: IO ()
+main = defaultMain
+@
+
+\section{Chunks}
+\nowebchunks
+
+\section{Index}
+\nowebindex
+
+\newpage
+
+\printbibliography
+
+\end{document}

@@ -1,40 +1,48 @@
 #! /usr/bin/env nix-shell
-#! nix-shell -i runhaskell -p "haskellPackages.ghcWithPackages (h: [ h.turtle h.aeson h.string-conversions ])"
+#! nix-shell -i runhaskell -p "haskellPackages.ghcWithPackages (h: [ h.turtle h.aeson h.string-conversions h.url ])"
 
 {-# LANGUAGE LambdaCase        #-}
+
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
 module Main (main) where
 
-import           Prelude                 ()
-import           Prelude.Compat          hiding (putStrLn)
-
-import           Control.Applicative     (empty)
+import           Prelude                 hiding (putStrLn)
 
 import           Data.Aeson
+import           Data.Aeson.Encoding     (text)
 import           Data.Aeson.TH           (defaultOptions, deriveJSON)
 
-import           Data.Foldable           (for_, traverse_)
 import qualified Data.HashMap.Lazy       as HM
-import           Data.Maybe              (catMaybes)
-import           Data.String.Conversions (cs)
 import           Data.Text               (Text)
 import qualified Data.Text               as T
+
+import           Network.URL            (URL, exportURL, importURL)
+
+import           Data.Foldable           (traverse_)
+import           Data.Maybe              (catMaybes)
+import           Data.String.Conversions (cs)
+
 import           Data.Text.IO            (putStrLn)
 
-import           Turtle                  (ExitCode (..), Shell, arguments, echo,
-                                          exit, liftIO, procStrict, sh)
-
--- -------------------------------------------------------------- [ Data Types ]
+import           Turtle                  (ExitCode (..), Shell, arguments,
+                                          echo, empty, exit, liftIO,
+                                          procStrict, sh)
 
 data Meta = Meta
   { description      :: Maybe Text
-  , homepage         :: Maybe Text
   , longDescription  :: Maybe Text
+  , branch           :: Maybe Text
+  , homepage         :: Maybe NixURL
+  , downloadPage     :: Maybe NixURL
   , maintainers      :: Maybe [Text]
-  , outputsToInstall :: Maybe [Text]
+  , priority         :: Maybe Int
   , platforms        :: Maybe [Text]
+  , hydraPlatforms   :: Maybe [Text]
+  , broken           :: Maybe Bool
+  , updateWalker     :: Maybe Bool
+  , outputsToInstall :: Maybe [Text]
   , position         :: Maybe Text
   }
   deriving (Show)
@@ -54,7 +62,7 @@ data Package = Package
 
 newtype PackageList = PackageList [Package]
 
--- ------------------------------------------------------ [ FromJSON Instances ]
+newtype NixURL = NixURL URL deriving (Show)
 
 $(deriveJSON defaultOptions ''Meta)
 
@@ -65,7 +73,15 @@ instance FromJSON PackageList where
     PackageList <$> traverse (\(p,y) -> Package p <$> parseJSON y) (HM.toList v)
   parseJSON _          = fail "non-object"
 
--- -------------------------------------------------------- [ Helper Functions ]
+instance FromJSON NixURL where
+  parseJSON (String t) = case importURL (T.unpack t) of
+                           Just url -> pure $ NixURL url
+                           Nothing  -> fail "no parse"
+  parseJSON _          = fail "non-string"
+
+instance ToJSON NixURL where
+  toJSON (NixURL url)     = String (T.pack (exportURL url))
+  toEncoding (NixURL url) = text (T.pack (exportURL url))
 
 -- printPackage :: MonadIO io => Package -> io ()
 printPackage :: Package -> IO ()
@@ -75,7 +91,7 @@ printPackage (Package pkgPath (PackageInfo pkgName _pkgSystem pkgMeta)) =
   [ Just pkgName
   -- , Just pkgSystem
   , description pkgMeta
-  , homepage pkgMeta
+  , T.pack . exportURL . (\(NixURL url) -> url) <$> homepage pkgMeta
   -- , T.unwords . T.words <$> longDescription pkgMeta
   , T.unwords <$> maintainers pkgMeta
   -- , T.unwords <$> outputsToInstall pkgMeta
@@ -90,15 +106,11 @@ nixQuery arg =
   (ExitSuccess,txt) -> pure $ decode (cs txt)
   (status,_)        -> exit status
 
--- -------------------------------------------------------------------- [ Main ]
-
 main :: IO ()
 main =
   sh $ arguments >>= \case
   [arg] -> nixQuery arg >>= \case
-           Just (PackageList pkgs) -> liftIO $ for_ pkgs printPackage
+           Just (PackageList pkgs) -> liftIO $ traverse_ printPackage pkgs
            Nothing                 -> exit $ ExitFailure 1
   _     -> do echo "TODO: usage"
               exit $ ExitFailure 1
-
--- --------------------------------------------------------------------- [ EOF ]

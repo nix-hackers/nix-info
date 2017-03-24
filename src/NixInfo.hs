@@ -1,4 +1,4 @@
--- -------------------------------------------------------------- [ NixInfo.hs ]
+#line 268 "nix-info.nw"
 -- |
 -- Module      : NixInfo
 -- Copyright   : (c) 2017, Eric Bailey
@@ -9,20 +9,27 @@
 -- Portability : portable
 --
 -- brew info clone for Nix
------------------------------------------------------------------------- [ EOH ]
+
 module NixInfo (printPackage) where
 
 import           NixInfo.Types
 
-import           Prelude        ()
-import           Prelude.Compat hiding (putStrLn)
+#line 423 "nix-info.nw"
+import           Prelude                 hiding (putStrLn)
 
-import           Data.Foldable  (traverse_)
-import           Data.Maybe     (catMaybes)
+#line 458 "nix-info.nw"
+import           Data.Foldable           (traverse_)
+import           Data.Maybe              (catMaybes)
 
-import qualified Data.Text      as T
-import           Data.Text.IO   (putStrLn)
+#line 287 "nix-info.nw"
+import qualified Data.Text               as T
+#line 453 "nix-info.nw"
+import           Data.Text.IO            (putStrLn)
 
+#line 290 "nix-info.nw"
+import           Network.URL             (exportURL)
+
+#line 248 "nix-info.nw"
 -- printPackage :: MonadIO io => Package -> io ()
 printPackage :: Package -> IO ()
 printPackage (Package pkgPath (PackageInfo pkgName _pkgSystem pkgMeta)) =
@@ -31,7 +38,7 @@ printPackage (Package pkgPath (PackageInfo pkgName _pkgSystem pkgMeta)) =
   [ Just pkgName
   -- , Just pkgSystem
   , description pkgMeta
-  , homepage pkgMeta
+  , T.pack . exportURL . (\(NixURL url) -> url) <$> homepage pkgMeta
   -- , T.unwords . T.words <$> longDescription pkgMeta
   , T.unwords <$> maintainers pkgMeta
   -- , T.unwords <$> outputsToInstall pkgMeta
@@ -39,5 +46,3 @@ printPackage (Package pkgPath (PackageInfo pkgName _pkgSystem pkgMeta)) =
   , Just pkgPath
   , position pkgMeta
   ]
-
--- --------------------------------------------------------------------- [ EOF ]

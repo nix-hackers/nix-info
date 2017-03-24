@@ -53,7 +53,7 @@
 
 \author{Eric Bailey}
 
-\date{March 18, 2017}
+% \date{March 18, 2017}
 
 % \newcommand{\stylehook}{\marginpar{\raggedright\sl style hook}}
 
@@ -219,7 +219,7 @@ instance ToJSON \nwlinkedidentc{NixURL}{NW3lV6pB-39G3ut-1} where
 
 \nwenddocs{}\nwbegincode{17}\sublabel{NW3lV6pB-1ClFUp-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW3lV6pB-1ClFUp-1}}}\moddef{src/NixInfo/Types.hs~{\nwtagstyle{}\subpageref{NW3lV6pB-1ClFUp-1}}}\endmoddef\nwstartdeflinemarkup\nwenddeflinemarkup
 -- |
--- Module      : \nwlinkedidentc{NixInfo.Types}{NW3lV6pB-1ClFUp-1}
+-- Module      : \nwlinkedidentc{NixInfo}{NW3lV6pB-3KgweQ-1}\nwlinkedidentc{.Types}{NW3lV6pB-1ClFUp-1}
 -- Copyright   : (c) 2017, Eric Bailey
 -- License     : BSD-style (see LICENSE)
 --
@@ -232,7 +232,7 @@ instance ToJSON \nwlinkedidentc{NixURL}{NW3lV6pB-39G3ut-1} where
 \LA{}OverloadedStrings~{\nwtagstyle{}\subpageref{NW3lV6pB-2Z5QZX-1}}\RA{}
 \LA{}TemplateHaskell~{\nwtagstyle{}\subpageref{NW3lV6pB-2PXGaB-1}}\RA{}
 
-module \nwlinkedidentc{NixInfo.Types}{NW3lV6pB-1ClFUp-1} where
+module \nwlinkedidentc{NixInfo}{NW3lV6pB-3KgweQ-1}\nwlinkedidentc{.Types}{NW3lV6pB-1ClFUp-1} where
 
 \LA{}NixInfo.Types Imports~{\nwtagstyle{}\subpageref{NW3lV6pB-33WSsm-1}}\RA{}
 
@@ -241,7 +241,7 @@ module \nwlinkedidentc{NixInfo.Types}{NW3lV6pB-1ClFUp-1} where
 \LA{}FromJSON Instances~{\nwtagstyle{}\subpageref{NW3lV6pB-43l1LQ-1}}\RA{}
 \nwindexdefn{\nwixident{NixInfo.Types}}{NixInfo.Types}{NW3lV6pB-1ClFUp-1}\eatline
 \nwindexdefn{\nwixident{FromJSON}}{FromJSON}{NW3lV6pB-1ClFUp-1}\eatline
-\nwnotused{src/NixInfo/Types.hs}\nwidentdefs{\\{{\nwixident{FromJSON}}{FromJSON}}\\{{\nwixident{NixInfo.Types}}{NixInfo.Types}}}\nwidentuses{\\{{\nwixident{info}}{info}}}\nwindexuse{\nwixident{info}}{info}{NW3lV6pB-1ClFUp-1}\nwendcode{}\nwbegindocs{18}\nwdocspar
+\nwnotused{src/NixInfo/Types.hs}\nwidentdefs{\\{{\nwixident{FromJSON}}{FromJSON}}\\{{\nwixident{NixInfo.Types}}{NixInfo.Types}}}\nwidentuses{\\{{\nwixident{info}}{info}}\\{{\nwixident{NixInfo}}{NixInfo}}}\nwindexuse{\nwixident{info}}{info}{NW3lV6pB-1ClFUp-1}\nwindexuse{\nwixident{NixInfo}}{NixInfo}{NW3lV6pB-1ClFUp-1}\nwendcode{}\nwbegindocs{18}\nwdocspar
 \section{Helper Functions}
 
 \nwenddocs{}\nwbegincode{19}\sublabel{NW3lV6pB-esBWi-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW3lV6pB-esBWi-1}}}\moddef{printPackage~{\nwtagstyle{}\subpageref{NW3lV6pB-esBWi-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW3lV6pB-3KgweQ-1}\\{NW3lV6pB-4NdpI2-1}}\nwenddeflinemarkup
@@ -266,7 +266,7 @@ printPackage (\nwlinkedidentc{Package}{NW3lV6pB-JwV0T-1} pkgPath (\nwlinkedident
 
 \nwenddocs{}\nwbegincode{21}\sublabel{NW3lV6pB-3KgweQ-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW3lV6pB-3KgweQ-1}}}\moddef{src/NixInfo.hs~{\nwtagstyle{}\subpageref{NW3lV6pB-3KgweQ-1}}}\endmoddef\nwstartdeflinemarkup\nwenddeflinemarkup
 -- |
--- Module      : NixInfo
+-- Module      : \nwlinkedidentc{NixInfo}{NW3lV6pB-3KgweQ-1}
 -- Copyright   : (c) 2017, Eric Bailey
 -- License     : BSD-style (see LICENSE)
 --
@@ -276,9 +276,9 @@ printPackage (\nwlinkedidentc{Package}{NW3lV6pB-JwV0T-1} pkgPath (\nwlinkedident
 --
 -- brew \nwlinkedidentc{info}{NW3lV6pB-JwV0T-1} clone for Nix
 
-module NixInfo (printPackage) where
+module \nwlinkedidentc{NixInfo}{NW3lV6pB-3KgweQ-1} (printPackage) where
 
-import           \nwlinkedidentc{NixInfo.Types}{NW3lV6pB-1ClFUp-1}
+import           \nwlinkedidentc{NixInfo}{NW3lV6pB-3KgweQ-1}\nwlinkedidentc{.Types}{NW3lV6pB-1ClFUp-1}
 
 \LA{}hide Prelude.putStrLn~{\nwtagstyle{}\subpageref{NW3lV6pB-3agbDv-1}}\RA{}
 
@@ -290,8 +290,8 @@ import qualified Data.\nwlinkedidentc{Text}{NW3lV6pB-33WSsm-1}\nwlinkedidentc{  
 \nwindexdefn{\nwixident{exportURL}}{exportURL}{NW3lV6pB-3KgweQ-1}import           Network.\nwlinkedidentc{URL}{NW3lV6pB-33WSsm-1}\nwlinkedidentc{             (}{NW3lV6pB-33WSsm-1}\nwlinkedidentc{exportURL}{NW3lV6pB-3KgweQ-1})
 
 \LA{}printPackage~{\nwtagstyle{}\subpageref{NW3lV6pB-esBWi-1}}\RA{}
-\nwnotused{src/NixInfo.hs}\nwidentdefs{\\{{\nwixident{exportURL}}{exportURL}}}\nwidentuses{\\{{\nwixident{Data.Text}}{Data.Text}}\\{{\nwixident{info}}{info}}\\{{\nwixident{Network.URL}}{Network.URL}}\\{{\nwixident{NixInfo.Types}}{NixInfo.Types}}\\{{\nwixident{T}}{T}}\\{{\nwixident{Text}}{Text}}\\{{\nwixident{URL}}{URL}}}\nwindexuse{\nwixident{Data.Text}}{Data.Text}{NW3lV6pB-3KgweQ-1}\nwindexuse{\nwixident{info}}{info}{NW3lV6pB-3KgweQ-1}\nwindexuse{\nwixident{Network.URL}}{Network.URL}{NW3lV6pB-3KgweQ-1}\nwindexuse{\nwixident{NixInfo.Types}}{NixInfo.Types}{NW3lV6pB-3KgweQ-1}\nwindexuse{\nwixident{T}}{T}{NW3lV6pB-3KgweQ-1}\nwindexuse{\nwixident{Text}}{Text}{NW3lV6pB-3KgweQ-1}\nwindexuse{\nwixident{URL}}{URL}{NW3lV6pB-3KgweQ-1}\nwendcode{}\nwbegindocs{22}\nwdocspar
-
+\nwindexdefn{\nwixident{NixInfo}}{NixInfo}{NW3lV6pB-3KgweQ-1}\eatline
+\nwnotused{src/NixInfo.hs}\nwidentdefs{\\{{\nwixident{exportURL}}{exportURL}}\\{{\nwixident{NixInfo}}{NixInfo}}}\nwidentuses{\\{{\nwixident{Data.Text}}{Data.Text}}\\{{\nwixident{info}}{info}}\\{{\nwixident{Network.URL}}{Network.URL}}\\{{\nwixident{NixInfo.Types}}{NixInfo.Types}}\\{{\nwixident{T}}{T}}\\{{\nwixident{Text}}{Text}}\\{{\nwixident{URL}}{URL}}}\nwindexuse{\nwixident{Data.Text}}{Data.Text}{NW3lV6pB-3KgweQ-1}\nwindexuse{\nwixident{info}}{info}{NW3lV6pB-3KgweQ-1}\nwindexuse{\nwixident{Network.URL}}{Network.URL}{NW3lV6pB-3KgweQ-1}\nwindexuse{\nwixident{NixInfo.Types}}{NixInfo.Types}{NW3lV6pB-3KgweQ-1}\nwindexuse{\nwixident{T}}{T}{NW3lV6pB-3KgweQ-1}\nwindexuse{\nwixident{Text}}{Text}{NW3lV6pB-3KgweQ-1}\nwindexuse{\nwixident{URL}}{URL}{NW3lV6pB-3KgweQ-1}\nwendcode{}\nwbegindocs{22}\nwdocspar
 \section{Main Executable}
 
 \nwenddocs{}\nwbegincode{23}\sublabel{NW3lV6pB-1oSFZX-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW3lV6pB-1oSFZX-1}}}\moddef{nixQuery~{\nwtagstyle{}\subpageref{NW3lV6pB-1oSFZX-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW3lV6pB-zkSPe-1}\\{NW3lV6pB-4NdpI2-1}}\nwenddeflinemarkup
@@ -330,8 +330,8 @@ import qualified Data.\nwlinkedidentc{Text}{NW3lV6pB-33WSsm-1}\nwlinkedidentc{  
 
 module \nwlinkedidentc{Main}{NW3lV6pB-4NdpI2-1} (\nwlinkedidentc{main}{NW3lV6pB-23uoZy-1}) where
 
-import           NixInfo                 (printPackage)
-import           \nwlinkedidentc{NixInfo.Types}{NW3lV6pB-1ClFUp-1}
+import           \nwlinkedidentc{NixInfo}{NW3lV6pB-3KgweQ-1}                 (printPackage)
+import           \nwlinkedidentc{NixInfo}{NW3lV6pB-3KgweQ-1}\nwlinkedidentc{.Types}{NW3lV6pB-1ClFUp-1}
 
 \LA{}import Data.Aeson~{\nwtagstyle{}\subpageref{NW3lV6pB-2HZloV-1}}\RA{}
 import           \nwlinkedidentc{Data.Foldable}{NW3lV6pB-3lPV08-1}           (\nwlinkedidentc{traverse_}{NW3lV6pB-3lPV08-1})
@@ -343,7 +343,7 @@ import           Data.\nwlinkedidentc{Text}{NW3lV6pB-33WSsm-1}\nwlinkedidentc{  
 \LA{}nixQuery~{\nwtagstyle{}\subpageref{NW3lV6pB-1oSFZX-1}}\RA{}
 
 \LA{}main~{\nwtagstyle{}\subpageref{NW3lV6pB-23uoZy-1}}\RA{}
-\nwnotused{app/Main.hs}\nwidentuses{\\{{\nwixident{cs}}{cs}}\\{{\nwixident{Data.Foldable}}{Data.Foldable}}\\{{\nwixident{Data.Text}}{Data.Text}}\\{{\nwixident{info}}{info}}\\{{\nwixident{Main}}{Main}}\\{{\nwixident{main}}{main}}\\{{\nwixident{NixInfo.Types}}{NixInfo.Types}}\\{{\nwixident{Text}}{Text}}\\{{\nwixident{traverse{\_}}}{traverse:un}}}\nwindexuse{\nwixident{cs}}{cs}{NW3lV6pB-zkSPe-1}\nwindexuse{\nwixident{Data.Foldable}}{Data.Foldable}{NW3lV6pB-zkSPe-1}\nwindexuse{\nwixident{Data.Text}}{Data.Text}{NW3lV6pB-zkSPe-1}\nwindexuse{\nwixident{info}}{info}{NW3lV6pB-zkSPe-1}\nwindexuse{\nwixident{Main}}{Main}{NW3lV6pB-zkSPe-1}\nwindexuse{\nwixident{main}}{main}{NW3lV6pB-zkSPe-1}\nwindexuse{\nwixident{NixInfo.Types}}{NixInfo.Types}{NW3lV6pB-zkSPe-1}\nwindexuse{\nwixident{Text}}{Text}{NW3lV6pB-zkSPe-1}\nwindexuse{\nwixident{traverse{\_}}}{traverse:un}{NW3lV6pB-zkSPe-1}\nwendcode{}\nwbegindocs{28}\nwdocspar
+\nwnotused{app/Main.hs}\nwidentuses{\\{{\nwixident{cs}}{cs}}\\{{\nwixident{Data.Foldable}}{Data.Foldable}}\\{{\nwixident{Data.Text}}{Data.Text}}\\{{\nwixident{info}}{info}}\\{{\nwixident{Main}}{Main}}\\{{\nwixident{main}}{main}}\\{{\nwixident{NixInfo}}{NixInfo}}\\{{\nwixident{NixInfo.Types}}{NixInfo.Types}}\\{{\nwixident{Text}}{Text}}\\{{\nwixident{traverse{\_}}}{traverse:un}}}\nwindexuse{\nwixident{cs}}{cs}{NW3lV6pB-zkSPe-1}\nwindexuse{\nwixident{Data.Foldable}}{Data.Foldable}{NW3lV6pB-zkSPe-1}\nwindexuse{\nwixident{Data.Text}}{Data.Text}{NW3lV6pB-zkSPe-1}\nwindexuse{\nwixident{info}}{info}{NW3lV6pB-zkSPe-1}\nwindexuse{\nwixident{Main}}{Main}{NW3lV6pB-zkSPe-1}\nwindexuse{\nwixident{main}}{main}{NW3lV6pB-zkSPe-1}\nwindexuse{\nwixident{NixInfo}}{NixInfo}{NW3lV6pB-zkSPe-1}\nwindexuse{\nwixident{NixInfo.Types}}{NixInfo.Types}{NW3lV6pB-zkSPe-1}\nwindexuse{\nwixident{Text}}{Text}{NW3lV6pB-zkSPe-1}\nwindexuse{\nwixident{traverse{\_}}}{traverse:un}{NW3lV6pB-zkSPe-1}\nwendcode{}\nwbegindocs{28}\nwdocspar
 
 \section{As a Script}
 
@@ -498,8 +498,8 @@ dependencies:
 library:
   source-dirs: src
   exposed-modules:
-  - NixInfo
-  - \nwlinkedidentc{NixInfo.Types}{NW3lV6pB-1ClFUp-1}
+  - \nwlinkedidentc{NixInfo}{NW3lV6pB-3KgweQ-1}
+  - \nwlinkedidentc{NixInfo}{NW3lV6pB-3KgweQ-1}\nwlinkedidentc{.Types}{NW3lV6pB-1ClFUp-1}
 
 executables:
   nix-\nwlinkedidentc{info}{NW3lV6pB-JwV0T-1}:
@@ -507,7 +507,7 @@ executables:
     source-dirs: app
     dependencies:
     - nix-\nwlinkedidentc{info}{NW3lV6pB-JwV0T-1}
-\nwnotused{package.yaml}\nwidentuses{\\{{\nwixident{description}}{description}}\\{{\nwixident{homepage}}{homepage}}\\{{\nwixident{info}}{info}}\\{{\nwixident{Main}}{Main}}\\{{\nwixident{main}}{main}}\\{{\nwixident{name}}{name}}\\{{\nwixident{NixInfo.Types}}{NixInfo.Types}}\\{{\nwixident{text}}{text}}}\nwindexuse{\nwixident{description}}{description}{NW3lV6pB-sQOAe-1}\nwindexuse{\nwixident{homepage}}{homepage}{NW3lV6pB-sQOAe-1}\nwindexuse{\nwixident{info}}{info}{NW3lV6pB-sQOAe-1}\nwindexuse{\nwixident{Main}}{Main}{NW3lV6pB-sQOAe-1}\nwindexuse{\nwixident{main}}{main}{NW3lV6pB-sQOAe-1}\nwindexuse{\nwixident{name}}{name}{NW3lV6pB-sQOAe-1}\nwindexuse{\nwixident{NixInfo.Types}}{NixInfo.Types}{NW3lV6pB-sQOAe-1}\nwindexuse{\nwixident{text}}{text}{NW3lV6pB-sQOAe-1}\nwendcode{}\nwbegindocs{56}\nwdocspar
+\nwnotused{package.yaml}\nwidentuses{\\{{\nwixident{description}}{description}}\\{{\nwixident{homepage}}{homepage}}\\{{\nwixident{info}}{info}}\\{{\nwixident{Main}}{Main}}\\{{\nwixident{main}}{main}}\\{{\nwixident{name}}{name}}\\{{\nwixident{NixInfo}}{NixInfo}}\\{{\nwixident{NixInfo.Types}}{NixInfo.Types}}\\{{\nwixident{text}}{text}}}\nwindexuse{\nwixident{description}}{description}{NW3lV6pB-sQOAe-1}\nwindexuse{\nwixident{homepage}}{homepage}{NW3lV6pB-sQOAe-1}\nwindexuse{\nwixident{info}}{info}{NW3lV6pB-sQOAe-1}\nwindexuse{\nwixident{Main}}{Main}{NW3lV6pB-sQOAe-1}\nwindexuse{\nwixident{main}}{main}{NW3lV6pB-sQOAe-1}\nwindexuse{\nwixident{name}}{name}{NW3lV6pB-sQOAe-1}\nwindexuse{\nwixident{NixInfo}}{NixInfo}{NW3lV6pB-sQOAe-1}\nwindexuse{\nwixident{NixInfo.Types}}{NixInfo.Types}{NW3lV6pB-sQOAe-1}\nwindexuse{\nwixident{text}}{text}{NW3lV6pB-sQOAe-1}\nwendcode{}\nwbegindocs{56}\nwdocspar
 
 \nwenddocs{}\nwbegincode{57}\sublabel{NW3lV6pB-2OJOfk-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW3lV6pB-2OJOfk-1}}}\moddef{Setup.hs~{\nwtagstyle{}\subpageref{NW3lV6pB-2OJOfk-1}}}\endmoddef\nwstartdeflinemarkup\nwenddeflinemarkup
 import Distribution.Simple
@@ -582,6 +582,7 @@ import Distribution.Simple
 \nwixlogsorted{i}{{\nwixident{meta}}{meta}}%
 \nwixlogsorted{i}{{\nwixident{name}}{name}}%
 \nwixlogsorted{i}{{\nwixident{Network.URL}}{Network.URL}}%
+\nwixlogsorted{i}{{\nwixident{NixInfo}}{NixInfo}}%
 \nwixlogsorted{i}{{\nwixident{NixInfo.Types}}{NixInfo.Types}}%
 \nwixlogsorted{i}{{\nwixident{nixQuery}}{nixQuery}}%
 \nwixlogsorted{i}{{\nwixident{NixURL}}{NixURL}}%

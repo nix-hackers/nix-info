@@ -53,7 +53,7 @@
 
 \author{Eric Bailey}
 
-\date{March 18, 2017}
+% \date{March 18, 2017}
 
 % \newcommand{\stylehook}{\marginpar{\raggedright\sl style hook}}
 
@@ -290,7 +290,7 @@ import qualified Data.Text               as T
 import           Network.URL             (`exportURL)
 
 <<printPackage>>
-@
+@ %def NixInfo
 
 \section{Main Executable}
 

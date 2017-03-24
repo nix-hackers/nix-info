@@ -1,4 +1,4 @@
-#line 217 "nix-info.nw"
+#line 221 "nix-info.nw"
 -- |
 -- Module      : NixInfo.Types
 -- Copyright   : (c) 2017, Eric Bailey
@@ -10,25 +10,27 @@
 --
 -- Data types and JSON parsers for nix-info
 
-#line 400 "nix-info.nw"
+#line 405 "nix-info.nw"
 {-# LANGUAGE OverloadedStrings #-}
-#line 404 "nix-info.nw"
+#line 413 "nix-info.nw"
 {-# LANGUAGE TemplateHaskell   #-}
 
-#line 231 "nix-info.nw"
+#line 235 "nix-info.nw"
 module NixInfo.Types where
 
-#line 418 "nix-info.nw"
+#line 427 "nix-info.nw"
 import           Data.Aeson
-#line 422 "nix-info.nw"
+#line 431 "nix-info.nw"
+import           Data.Aeson.Encoding     (text)
+#line 435 "nix-info.nw"
 import           Data.Aeson.TH           (defaultOptions, deriveJSON)
 
-#line 429 "nix-info.nw"
+#line 443 "nix-info.nw"
 import qualified Data.HashMap.Lazy       as HM
 import           Data.Text               (Text)
 import qualified Data.Text               as T
 
-import           Network.URL            (URL, importURL)
+import           Network.URL            (URL, exportURL, importURL)
 
 #line 137 "nix-info.nw"
 data Meta = Meta
@@ -85,3 +87,7 @@ instance FromJSON NixURL where
                            Just url -> pure $ NixURL url
                            Nothing  -> fail "no parse"
   parseJSON _          = fail "non-string"
+
+instance ToJSON NixURL where
+  toJSON (NixURL url)     = String (T.pack (exportURL url))
+  toEncoding (NixURL url) = text (T.pack (exportURL url))

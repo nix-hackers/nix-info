@@ -11,13 +11,14 @@ module Main (main) where
 import           Prelude                 hiding (putStrLn)
 
 import           Data.Aeson
+import           Data.Aeson.Encoding     (text)
 import           Data.Aeson.TH           (defaultOptions, deriveJSON)
 
 import qualified Data.HashMap.Lazy       as HM
 import           Data.Text               (Text)
 import qualified Data.Text               as T
 
-import           Network.URL            (URL, importURL)
+import           Network.URL            (URL, exportURL, importURL)
 
 import           Data.Foldable           (traverse_)
 import           Data.Maybe              (catMaybes)
@@ -78,6 +79,10 @@ instance FromJSON NixURL where
                            Nothing  -> fail "no parse"
   parseJSON _          = fail "non-string"
 
+instance ToJSON NixURL where
+  toJSON (NixURL url)     = String (T.pack (exportURL url))
+  toEncoding (NixURL url) = text (T.pack (exportURL url))
+
 -- printPackage :: MonadIO io => Package -> io ()
 printPackage :: Package -> IO ()
 printPackage (Package pkgPath (PackageInfo pkgName _pkgSystem pkgMeta)) =
@@ -86,7 +91,7 @@ printPackage (Package pkgPath (PackageInfo pkgName _pkgSystem pkgMeta)) =
   [ Just pkgName
   -- , Just pkgSystem
   , description pkgMeta
-  , homepage pkgMeta
+  , T.pack . exportURL . (\(NixURL url) -> url) <$> homepage pkgMeta
   -- , T.unwords . T.words <$> longDescription pkgMeta
   , T.unwords <$> maintainers pkgMeta
   -- , T.unwords <$> outputsToInstall pkgMeta

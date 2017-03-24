@@ -1,3 +1,5 @@
+noweb_src = nix-info.nw
+
 srcs := \
 	src/NixInfo/Types.hs \
 	src/NixInfo.hs \
@@ -9,24 +11,28 @@ tangle = notangle \
 	-R$@ $< \
 	-filter btdefn \
 	| cpif $@
+
 weave  = noweave \
 	-n \
 	-filter btdefn \
-	-delay -index $< >$@ \
+	-delay \
+	-index \
+	-latex $< \
 	| cpif $@
 
 .SUFFIXES: .tex .pdf
-# .nw.tex:  ; ${weave}
 .tex.pdf: ; latexmk --shell-escape -pdf -outdir=tex $<
 
 .PHONY: all build
 
 all: build script/nix-info docs/nix-info.pdf
 
-script/nix-info: nix-info.nw
+package.yaml: ${noweb_src}
+
+script/nix-info: ${noweb_src}
 	notangle -R$@ $< -filter btdefn | cpif $@
 
-${srcs}: nix-info.nw ; ${tangle}
+${srcs}: ${noweb_src} ; ${tangle}
 
 tex/%.tex: %.nw tex/%.bib ; ${weave}
 

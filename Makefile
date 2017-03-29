@@ -28,6 +28,7 @@ weave  = noweave \
 all: build script/nix-info docs/nix-info.pdf
 
 package.yaml: ${noweb_src}
+	${tangle}
 
 script/nix-info: ${noweb_src}
 	notangle -R$@ $< -filter btdefn | cpif $@

@@ -1,3 +1,4 @@
+#line 473 "nix-info.nw"
 name: nix-info
 version: '0.1.0.0'
 synopsis: brew info clone for Nix
